@@ -92,7 +92,9 @@ outcome drawBoard() {
 }
 
 outcome drawPieces() {
+  bool selected;
   for (int i=0; i<numPiecesInStage; i++) {
+    selected = (i == currentPiece);
     Piece piece = pieces[i];
     if (i == 0) {
       *DRAW_COLORS = 4;
@@ -106,7 +108,40 @@ outcome drawPieces() {
     } else {
       rect(p.x + 1, p.y + 1, 
            spaceSize - 2 , spaceSize * piece.length - 2);
-      
+    }
+
+    if (selected) {
+      *DRAW_COLORS = 0x20;
+      int arrowLen = spaceSize * piece.length - 10;
+      if (piece.o == H) {
+        /* line(p.x + 5, p.y + spaceSize/2, p.x + arrowLen, p.y + spaceSize/2); */
+        rect(p.x + 3, 
+             p.y + 3, 
+             spaceSize * piece.length - 6,
+             spaceSize - 6); 
+        rect(p.x + 5, 
+             p.y + 5, 
+             spaceSize * piece.length - 10,
+             spaceSize - 10); 
+        rect(p.x + 7, 
+             p.y + 7, 
+             spaceSize * piece.length - 14,
+             spaceSize - 14); 
+      } else {
+        /* line(p.x + spaceSize/2, p.y + 5, p.x + spaceSize/2, p.y + arrowLen); */
+        rect(p.x + 3, 
+             p.y + 3, 
+             spaceSize - 6, 
+             spaceSize * piece.length - 6); 
+        rect(p.x + 5, 
+             p.y + 5, 
+             spaceSize - 10, 
+             spaceSize * piece.length - 10); 
+        rect(p.x + 7, 
+             p.y + 7, 
+             spaceSize - 14, 
+             spaceSize * piece.length - 14); 
+      }
     }
   }
   return ok;
