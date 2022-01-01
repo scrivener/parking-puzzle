@@ -51,7 +51,7 @@ const uint8_t smiley[] = {
 };
 
 outcome placePieces() {
-    numPiecesInStage = 2;
+    numPiecesInStage = 4;
 
     pieces[0].topLeft.x = 0;
     pieces[0].topLeft.y = 2;
@@ -62,6 +62,16 @@ outcome placePieces() {
     pieces[1].topLeft.y = 0;
     pieces[1].o = V;
     pieces[1].length = 3;
+
+    pieces[2].topLeft.x = 3;
+    pieces[2].topLeft.y = 4;
+    pieces[2].o = H;
+    pieces[2].length = 3;
+
+    pieces[3].topLeft.x = 0;
+    pieces[3].topLeft.y = 3;
+    pieces[3].o = V;
+    pieces[3].length = 2;
 
     return ok;
 }
