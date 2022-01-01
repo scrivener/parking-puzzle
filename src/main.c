@@ -289,6 +289,12 @@ void update () {
       move(D);
     } else if (pressedThisFrame & BUTTON_1) {
       currentPiece = (currentPiece + 1) % numPiecesInStage;
+    } else if (pressedThisFrame & BUTTON_2) {
+      if (currentPiece == 0) {
+        currentPiece = numPiecesInStage - 1;
+      } else {
+        currentPiece = currentPiece - 1;
+      }
     }
     *DRAW_COLORS = 4;
     /* tone(260, 5, 10, TONE_PULSE1); */
