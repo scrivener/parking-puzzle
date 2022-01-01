@@ -14,12 +14,12 @@ typedef enum {ok, err} outcome;
 typedef struct {
     int8_t       x;
     int8_t       y;
-} Point ;
+} Point;
 
 typedef struct {
     uint8_t       x;
     uint8_t       y;
-} Pixel ;
+} Pixel;
 
 typedef struct {
     orientation    o;
