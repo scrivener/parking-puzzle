@@ -257,7 +257,7 @@ void game() {
     *DRAW_COLORS = 4;
 
     if (checkVictory()) {
-      text("YAS QUEEN", 50, 60);
+      text(level.victoryPhrase, 50, 60);
       if (!hasVictory) {
         tone(262 | (523 << 16), 60, 100, TONE_PULSE1);
       }
