@@ -1,4 +1,5 @@
 #include "wasm4.h"
+#include "splash.h"
 #include <string.h>
 #include <stdio.h>
 #include <stdbool.h>
@@ -38,17 +39,6 @@ uint8_t previousGamepad;
 Point goal = {6, 2};
 
 bool hasVictory = false;
-
-const uint8_t smiley[] = {
-    0b11000011,
-    0b10000001,
-    0b00100100,
-    0b00100100,
-    0b00000000,
-    0b00100100,
-    0b10011001,
-    0b11000011,
-};
 
 outcome placePieces() {
     numPiecesInStage = 4;
@@ -251,18 +241,19 @@ bool checkVictory() {
 
 }
 
+int framesToDate = 1;
 
-void start () {
-    placePieces();
-    /* Point x = {3,2}; */
-    /* if (isSpaceOccupied(x)) { */
-    /*   tracef("%d,%d is occupied", x.x, x.y); */
-    /* } else { */
-    /*   tracef("%d,%d is not occupied", x.x, x.y); */
-    /* } */
+
+void splashScreen() {
+  blit(splash, 0, 0, 160, 160, BLIT_2BPP);
+  text("Parking Puzzle", 10, 10);
+  text("Ada & \nMax 2022", 90, 110);
+  if (framesToDate == 1) {
+    tone(200 | (500 << 16), 60, 60, TONE_NOISE);
+  }
 }
 
-void update () {
+void game() {
     uint8_t gamepad = *GAMEPAD1;
     uint8_t pressedThisFrame = gamepad & (gamepad ^ previousGamepad);
     previousGamepad = gamepad;
@@ -297,11 +288,7 @@ void update () {
       }
     }
     *DRAW_COLORS = 4;
-    /* tone(260, 5, 10, TONE_PULSE1); */
-    /* tracef("%d %d", pieces[0].topLeft.x, pieces[0].topLeft.y); */
 
-    /* blit(smiley, 76, 76, 8, 8, BLIT_1BPP); */
-    /* text("Press X to blink", 16, 90); */
     if (checkVictory()) {
       text("YAS QUEEN", 50, 60);
       if (!hasVictory) {
@@ -309,4 +296,20 @@ void update () {
       }
       hasVictory = true;     
     }
+
+}
+
+
+void start () {
+    placePieces();
+}
+
+void update () {
+  if (framesToDate >=0 && framesToDate < 180) {
+    splashScreen();
+    framesToDate++;
+  } else {
+    framesToDate = -1;
+    game();
+  }
 }
