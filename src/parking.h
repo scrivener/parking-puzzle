@@ -25,3 +25,5 @@ typedef struct {
     Point         goal;
     char          victoryPhrase[64];
 } Level;
+
+outcome level1(Level *);

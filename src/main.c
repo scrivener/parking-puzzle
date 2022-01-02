@@ -1,4 +1,5 @@
 #include "wasm4.h"
+#include "parking.h"
 #include <string.h>
 #include <stdio.h>
 #include <stdbool.h>
@@ -7,74 +8,15 @@
 #define BOARD_WIDTH 6
 #define BOARD_HEIGHT 6
 
-typedef enum {H, V} orientation;
-typedef enum {L, R, U, D} direction;
-typedef enum {ok, err} outcome;
+Level level;  // The current level
 
-typedef struct {
-    int8_t       x;
-    int8_t       y;
-} Point;
-
-typedef struct {
-    uint8_t       x;
-    uint8_t       y;
-} Pixel;
-
-typedef struct {
-    orientation    o;
-    uint8_t       length;
-    Point         topLeft;
-} Piece;
-
-Piece pieces[MAX_PIECES];
-
+// Framebuffer is 160x160, we reserve 10 pixels margin 
+// so the board itself is 140 pixels across
 uint8_t spaceSize = (140 / BOARD_WIDTH) - 2;
-uint8_t numPiecesInStage;
 uint8_t currentPiece = 0;
-
 uint8_t previousGamepad;
-
-Point goal = {6, 2};
-
 bool hasVictory = false;
 
-const uint8_t smiley[] = {
-    0b11000011,
-    0b10000001,
-    0b00100100,
-    0b00100100,
-    0b00000000,
-    0b00100100,
-    0b10011001,
-    0b11000011,
-};
-
-outcome placePieces() {
-    numPiecesInStage = 4;
-
-    pieces[0].topLeft.x = 0;
-    pieces[0].topLeft.y = 2;
-    pieces[0].o = H;
-    pieces[0].length = 2;
-
-    pieces[1].topLeft.x = 3;
-    pieces[1].topLeft.y = 0;
-    pieces[1].o = V;
-    pieces[1].length = 3;
-
-    pieces[2].topLeft.x = 3;
-    pieces[2].topLeft.y = 4;
-    pieces[2].o = H;
-    pieces[2].length = 3;
-
-    pieces[3].topLeft.x = 0;
-    pieces[3].topLeft.y = 3;
-    pieces[3].o = V;
-    pieces[3].length = 2;
-
-    return ok;
-}
 
 Pixel boardToPixel(int x, int y) {
   Pixel pixel;
@@ -95,15 +37,18 @@ outcome drawBoard() {
      }
   }
 
-  Pixel p = boardToPixel(goal.x, goal.y);
+  Pixel p = boardToPixel(level.goal.x, 
+                         level.goal.y);
   rect(p.x, p.y, spaceSize, spaceSize);
 
   return ok;
 }
 
 outcome drawPieces() {
+  Piece *pieces = level.pieces;
+
   bool selected;
-  for (int i=0; i<numPiecesInStage; i++) {
+  for (int i=0; i<level.numPiecesInStage; i++) {
     selected = (i == currentPiece);
     Piece piece = pieces[i];
     if (i == 0) {
@@ -159,7 +104,7 @@ outcome drawPieces() {
 }
 
 bool isSpaceEdge(Point point) {
-  if (point.x == goal.x && point.y == goal.y) {
+  if (point.x == level.goal.x && point.y == level.goal.y) {
     return false;
   }
   if (point.x < 0 || point.y < 0) {
@@ -172,6 +117,8 @@ bool isSpaceEdge(Point point) {
 }
 
 bool isSpaceOccupied(Point point) {
+  Piece *pieces = level.pieces;
+
   for (int i=0; i<MAX_PIECES; i++) {
     Piece piece = pieces[i];
     int x, y;
@@ -190,6 +137,8 @@ bool isSpaceOccupied(Point point) {
 }
 
 bool isLegalMove(direction d) {
+  Piece *pieces = level.pieces;
+
   // Check that it's not a strafe
   Piece movePiece = pieces[currentPiece];
   if ((d == L || d == R) && movePiece.o == V) {
@@ -217,6 +166,8 @@ bool isLegalMove(direction d) {
 }
 
 outcome move(direction d) {
+  Piece *pieces = level.pieces;
+
   if (!isLegalMove(d)) {
     tone(100, 5, 10, TONE_PULSE1);
     return err;
@@ -236,11 +187,13 @@ outcome move(direction d) {
 }
 
 bool checkVictory() {
+  Piece *pieces = level.pieces;
+
   Piece player = pieces[0];
   int x = player.topLeft.x;
   int y = player.topLeft.y;
   for (int i=0; i<player.length; i++) {
-    if (x == goal.x && y == goal.y) {
+    if (x == level.goal.x && y == level.goal.y) {
       return true;
     }
     if (player.o == H) { x++; }
@@ -251,15 +204,8 @@ bool checkVictory() {
 
 }
 
-
 void start () {
-    placePieces();
-    /* Point x = {3,2}; */
-    /* if (isSpaceOccupied(x)) { */
-    /*   tracef("%d,%d is occupied", x.x, x.y); */
-    /* } else { */
-    /*   tracef("%d,%d is not occupied", x.x, x.y); */
-    /* } */
+    level1(&level);
 }
 
 void update () {
@@ -288,20 +234,15 @@ void update () {
     } else if (pressedThisFrame & BUTTON_DOWN) {
       move(D);
     } else if (pressedThisFrame & BUTTON_1) {
-      currentPiece = (currentPiece + 1) % numPiecesInStage;
+      currentPiece = (currentPiece + 1) % level.numPiecesInStage;
     } else if (pressedThisFrame & BUTTON_2) {
       if (currentPiece == 0) {
-        currentPiece = numPiecesInStage - 1;
+        currentPiece = level.numPiecesInStage - 1;
       } else {
         currentPiece = currentPiece - 1;
       }
     }
     *DRAW_COLORS = 4;
-    /* tone(260, 5, 10, TONE_PULSE1); */
-    /* tracef("%d %d", pieces[0].topLeft.x, pieces[0].topLeft.y); */
-
-    /* blit(smiley, 76, 76, 8, 8, BLIT_1BPP); */
-    /* text("Press X to blink", 16, 90); */
     if (checkVictory()) {
       text("YAS QUEEN", 50, 60);
       if (!hasVictory) {
