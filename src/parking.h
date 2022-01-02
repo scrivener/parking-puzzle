@@ -24,6 +24,7 @@ typedef struct {
     uint8_t       numPiecesInStage;
     Point         goal;
     char          victoryPhrase[64];
+    char          topPhrase[64];
 } Level;
 
 outcome level1(Level *);

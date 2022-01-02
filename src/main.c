@@ -229,13 +229,7 @@ void game() {
     drawPieces();
 
     *DRAW_COLORS = 2;
-    if (currentPiece == 0) {
-      text("0", 30, 0);
-    } else if (currentPiece == 1) {
-      text("1", 30, 0);
-    } else {
-      text("Piece beyond 1 selected", 30, 0);
-    }
+    text(level.topPhrase, 5, 2);
 
     if (pressedThisFrame & BUTTON_RIGHT) {
       move(R);
