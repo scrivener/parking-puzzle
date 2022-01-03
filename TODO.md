@@ -1,5 +1,3 @@
-- Cycle backwards through pieces 
-- Compact level description?
 - A sequence of levels
    - Place of pieces
    - Closing quote
@@ -10,3 +8,4 @@ Nice to have
 - Select a starting level
 - Save progress
 - Music? Better sounds?
+- Compact level description?
