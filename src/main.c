@@ -338,7 +338,7 @@ void levelSelect() {
     *DRAW_COLORS = 0x0004;
     text(levelSelectText, 12, 2);
     text("Select Level", 52, 2);
-    text("Use < > to Select", 12, 2);
+    text("Use < > to Select", 12, 152);
 
     if (leftPressed > 0) {
       *DRAW_COLORS = pressed;
