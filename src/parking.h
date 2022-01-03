@@ -28,3 +28,4 @@ typedef struct {
 } Level;
 
 outcome level1(Level *);
+outcome level2(Level *);

@@ -8,15 +8,38 @@
 #define MAX_PIECES 16
 #define BOARD_WIDTH 6
 #define BOARD_HEIGHT 6
+#define ARROW_FLASH_DURATION 6
+#define NUMBER_OF_LEVELS 2
+
+const uint8_t arrow[] = {
+    0b10000000,
+    0b11000000,
+    0b11100000,
+    0b11110000,
+    0b11111000,
+    0b11110000,
+    0b11100000,
+    0b11000000,
+    0b10000000,
+};
 
 Level level;  // The current level
+
+outcome (*levels[NUMBER_OF_LEVELS]) (Level *level);
 
 // Framebuffer is 160x160, we reserve 10 pixels margin 
 // so the board itself is 140 pixels across
 uint8_t spaceSize = (140 / BOARD_WIDTH) - 2;
 uint8_t currentPiece = 0;
 uint8_t previousGamepad;
+uint8_t gamepad;
+uint8_t pressedThisFrame;
 bool hasVictory = false;
+bool inLevelSelect = true;
+
+int leftPressed = 0;
+int rightPressed = 0;
+int levelSelectCounter = 0;
 
 Pixel boardToPixel(int x, int y) {
   Pixel pixel;
@@ -183,6 +206,7 @@ outcome move(direction d) {
   }
 
   tone(260, 5, 10, TONE_PULSE1);
+
   return ok;
 }
 
@@ -217,13 +241,21 @@ void splashScreen() {
 }
 
 void start () {
-    level1(&level);
+    levels[0] = level1;
+    levels[1] = level2;
+    (*levels[0])(&level);
 }
 
 void game() {
-    uint8_t gamepad = *GAMEPAD1;
-    uint8_t pressedThisFrame = gamepad & (gamepad ^ previousGamepad);
-    previousGamepad = gamepad;
+     PALETTE[0] = 0xe0f8cf;
+     PALETTE[1] = 0x86c06c;
+     PALETTE[2] = 0x306850; 
+     PALETTE[3] = 0x71821;
+
+      
+    /* uint8_t gamepad = *GAMEPAD1; */
+    /* uint8_t pressedThisFrame = gamepad & (gamepad ^ previousGamepad); */
+    /* previousGamepad = gamepad; */
 
     drawBoard();
     drawPieces();
@@ -258,14 +290,76 @@ void game() {
       hasVictory = true;     
     }
 
+
+}
+
+void levelSelect() {
+    // Experiment with using a paler color palette in level select
+    PALETTE[0] = 0xeaffd9;
+    PALETTE[1] = 0xa0da86;
+    PALETTE[2] = 0x4A826A; 
+    PALETTE[3] = 0x21323B;
+    
+    drawBoard();
+    drawPieces();
+
+    if (pressedThisFrame & BUTTON_RIGHT) {
+      rightPressed = ARROW_FLASH_DURATION;
+      levelSelectCounter = (levelSelectCounter + 1) % NUMBER_OF_LEVELS;
+      (*levels[levelSelectCounter]) (&level);
+    } else if (pressedThisFrame & BUTTON_LEFT) {
+      leftPressed = ARROW_FLASH_DURATION;
+      if (levelSelectCounter == 0) {
+        levelSelectCounter = NUMBER_OF_LEVELS - 1;
+      } else {
+        levelSelectCounter--;
+      }
+      (*levels[levelSelectCounter]) (&level);
+    } else if (pressedThisFrame & BUTTON_1) {
+      inLevelSelect = false;
+    }
+
+  
+    uint16_t unpressed = 0x0040;
+    uint16_t pressed = 0x4000;
+
+    if (rightPressed > 0) {
+      *DRAW_COLORS = pressed;
+      rightPressed--;
+    } else {
+      *DRAW_COLORS = unpressed;
+    }
+    blit(arrow, 152, 75, 8, 9, BLIT_1BPP);
+
+    char levelSelectText[80]; 
+    levelSelectText[0]= 0x30 + levelSelectCounter + 1;
+    levelSelectText[1]= 0x0;
+    
+    *DRAW_COLORS = 0x0004;
+    text(levelSelectText, 12, 2);
+    text("Select Level", 52, 2);
+    text("Use < > to Select", 12, 2);
+
+    if (leftPressed > 0) {
+      *DRAW_COLORS = pressed;
+      leftPressed--;
+    } else {
+      *DRAW_COLORS = unpressed;
+    }
+    blit(arrow, 0, 75, 8, 9, BLIT_1BPP | BLIT_FLIP_X);
 }
 
 void update () {
+  gamepad = *GAMEPAD1;
+  pressedThisFrame = gamepad & (gamepad ^ previousGamepad);
+  previousGamepad = gamepad;
   if (framesToDate >=0 && framesToDate < 180) {
     splashScreen();
     framesToDate++;
-  } else {
+  } else if (inLevelSelect) {
     framesToDate = -1;
+    levelSelect();
+  } else {
     game();
   }
 }
