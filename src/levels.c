@@ -64,8 +64,8 @@ outcome level2(Level *level) {
     level->goal.x = 6;
     level->goal.y = 2;
     
-    strcpy(level->victoryPhrase, "YAS QUEEN");
-    strcpy(level->topPhrase, "Escape Parking Hell");
+    strcpy(level->victoryPhrase, "GET IT");
+    strcpy(level->topPhrase, "Keep Going");
 
     return ok;
 }
