@@ -2,8 +2,8 @@
 X Adjust top text
 X Explanation text during play
 X Color palette change for level select?
-- Clean up level ending
-  - Keypress stop, audio doesn't stop, press x to continue
+X Clean up level ending
+  X Keypress stop, audio doesn't stop, press x to continue
 
 Nice to have
 - Save progress

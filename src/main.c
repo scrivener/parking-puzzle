@@ -39,7 +39,8 @@ uint8_t pressedThisFrame;
 
 int leftPressed = 0;
 int rightPressed = 0;
-int levelSelectCounter = 0;
+uint8_t maximumLevel = 0;
+uint8_t levelSelectCounter = 0;
 
 Pixel boardToPixel(int x, int y) {
   Pixel pixel;
@@ -142,7 +143,7 @@ bool isSpaceEdge(Point point) {
 bool isSpaceOccupied(Point point) {
   Piece *pieces = level.pieces;
 
-  for (int i=0; i<MAX_PIECES; i++) {
+  for (int i=0; i<level.numPiecesInStage; i++) {
     Piece piece = pieces[i];
     int x, y;
     x = piece.topLeft.x;
@@ -245,11 +246,17 @@ void splashScreen() {
 }
 
 void start () {
+    trace("Game started");
     levels[0] = levelA;
     levels[1] = level0;
     levels[2] = level1;
     levels[3] = level2;
-    (*levels[0])(&level);
+    diskr(&maximumLevel, sizeof(maximumLevel));
+    tracef("On start read %d", maximumLevel);
+    levelSelectCounter = maximumLevel;
+    (*levels[levelSelectCounter])(&level);
+
+
 }
 
 void play() {
@@ -291,7 +298,6 @@ void play() {
       text(level.victoryPhrase, 20, 60);
       text("x continues", 12, 152);
       if (pressedThisFrame & BUTTON_1) {
-        levelSelectCounter = (levelSelectCounter + 1) % NUMBER_OF_LEVELS;
         (*levels[levelSelectCounter]) (&level);
         state = game;
       }
@@ -301,6 +307,10 @@ void play() {
 
     if (checkVictory() && state == game) {
       state = victory; 
+      levelSelectCounter = (levelSelectCounter + 1) % NUMBER_OF_LEVELS;
+      maximumLevel = levelSelectCounter;
+      diskw(&maximumLevel, sizeof(maximumLevel));
+      tracef("Wrote %d", maximumLevel);
       tone(262 | (523 << 16), 60, 100, TONE_PULSE1);
     }
 
@@ -318,12 +328,12 @@ void levelSelect() {
 
     if (pressedThisFrame & BUTTON_RIGHT) {
       rightPressed = ARROW_FLASH_DURATION;
-      levelSelectCounter = (levelSelectCounter + 1) % NUMBER_OF_LEVELS;
+      levelSelectCounter = (levelSelectCounter + 1) % (maximumLevel + 1);
       (*levels[levelSelectCounter]) (&level);
     } else if (pressedThisFrame & BUTTON_LEFT) {
       leftPressed = ARROW_FLASH_DURATION;
       if (levelSelectCounter == 0) {
-        levelSelectCounter = NUMBER_OF_LEVELS - 1;
+        levelSelectCounter = maximumLevel - 1;
       } else {
         levelSelectCounter--;
       }
@@ -370,7 +380,11 @@ void update () {
     splashScreen();
     framesToDate++;
   } else if (state == select) {
-    levelSelect();
+    if (maximumLevel > 0) {
+      levelSelect();
+    } else {
+      state = game;
+    }
   } else if (state == game) {
     play();
   } else if (state == victory) {

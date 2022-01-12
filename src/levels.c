@@ -108,7 +108,7 @@ outcome level2(Level *level) {
     level->pieces[2].length = 3;
 
     level->pieces[3].topLeft.x = 2;
-    level->pieces[3].topLeft.y = 4;
+    level->pieces[3].topLeft.y = 3;
     level->pieces[3].o = V;
     level->pieces[3].length = 2;
 
