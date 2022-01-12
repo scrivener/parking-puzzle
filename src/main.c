@@ -49,7 +49,7 @@ Pixel boardToPixel(int x, int y) {
   return pixel;
 }
 
-outcome drawBoard() { 
+void drawBoard() { 
   *DRAW_COLORS = 2;
   rect(10, 10, 140, 140);
   
@@ -64,11 +64,9 @@ outcome drawBoard() {
   Pixel p = boardToPixel(level.goal.x, 
                          level.goal.y);
   rect(p.x, p.y, spaceSize, spaceSize);
-
-  return ok;
 }
 
-outcome drawPieces() {
+void drawPieces() {
   Piece *pieces = level.pieces;
 
   bool selected;
@@ -135,8 +133,6 @@ outcome drawPieces() {
       }
     }
   }
-  return ok;
-
 }
 
 bool isSpaceEdge(Point point) {
@@ -257,6 +253,12 @@ void splashScreen() {
   }
 }
 
+void endScreen() {
+  *DRAW_COLORS = 2;
+  text("Hell is other cars", 10, 20);
+  //TODO music
+}
+
 void start () {
     trace("Game started");
     levels[0] = levelA;
@@ -319,13 +321,17 @@ void play() {
 
     if (checkVictory() && state == game) {
       state = victory; 
-      levelSelectCounter = (levelSelectCounter + 1) % NUMBER_OF_LEVELS;
-      if (maximumLevel < levelSelectCounter) {
-        maximumLevel = levelSelectCounter;
+      if (levelSelectCounter == NUMBER_OF_LEVELS - 1) {
+        state = end;
+      } else {
+        levelSelectCounter = (levelSelectCounter + 1) % NUMBER_OF_LEVELS;
+        if (maximumLevel < levelSelectCounter) {
+          maximumLevel = levelSelectCounter;
+        }
+        diskw(&maximumLevel, sizeof(maximumLevel));
+        tracef("Wrote %d", maximumLevel);
+        tone(262 | (523 << 16), 60, 100, TONE_PULSE1);
       }
-      diskw(&maximumLevel, sizeof(maximumLevel));
-      tracef("Wrote %d", maximumLevel);
-      tone(262 | (523 << 16), 60, 100, TONE_PULSE1);
     }
 
 }
@@ -403,5 +409,7 @@ void update () {
     play();
   } else if (state == victory) {
     play();
+  } else if (state == end) {
+    endScreen();
   }
 }
