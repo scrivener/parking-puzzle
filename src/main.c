@@ -27,6 +27,8 @@ Level level;  // The current level
 
 outcome (*levels[NUMBER_OF_LEVELS]) (Level *level);
 
+gameState state = splash;
+
 // Framebuffer is 160x160, we reserve 10 pixels margin 
 // so the board itself is 140 pixels across
 uint8_t spaceSize = (140 / BOARD_WIDTH) - 2;
@@ -34,8 +36,6 @@ uint8_t currentPiece = 0;
 uint8_t previousGamepad;
 uint8_t gamepad;
 uint8_t pressedThisFrame;
-bool hasVictory = false;
-bool inLevelSelect = true;
 
 int leftPressed = 0;
 int rightPressed = 0;
@@ -232,11 +232,15 @@ int framesToDate = 1;
 
 
 void splashScreen() {
-  blit(splash, 0, 0, 160, 160, BLIT_2BPP);
+  framesToDate++;
+  blit(splashSprite, 0, 0, 160, 160, BLIT_2BPP);
   text("Parking Puzzle", 10, 10);
   text("Ada & \nMax 2022", 90, 110);
   if (framesToDate == 10) {
     tone(200 | (500 << 16), 60, 60, TONE_NOISE);
+  }
+  if (framesToDate == 300) {
+    state = select;
   }
 }
 
@@ -248,7 +252,7 @@ void start () {
     (*levels[0])(&level);
 }
 
-void game() {
+void play() {
      PALETTE[0] = 0xe0f8cf;
      PALETTE[1] = 0x86c06c;
      PALETTE[2] = 0x306850; 
@@ -264,31 +268,40 @@ void game() {
     *DRAW_COLORS = 2;
     text(level.topPhrase, 5, 2);
 
-    if (pressedThisFrame & BUTTON_RIGHT) {
-      move(R);
-    } else if (pressedThisFrame & BUTTON_LEFT) {
-      move(L);
-    } else if (pressedThisFrame & BUTTON_UP) {
-      move(U);
-    } else if (pressedThisFrame & BUTTON_DOWN) {
-      move(D);
-    } else if (pressedThisFrame & BUTTON_1) {
-      currentPiece = (currentPiece + 1) % level.numPiecesInStage;
-    } else if (pressedThisFrame & BUTTON_2) {
-      if (currentPiece == 0) {
-        currentPiece = level.numPiecesInStage - 1;
-      } else {
-        currentPiece = currentPiece - 1;
+    if (state == game) {
+      if (pressedThisFrame & BUTTON_RIGHT) {
+        move(R);
+      } else if (pressedThisFrame & BUTTON_LEFT) {
+        move(L);
+      } else if (pressedThisFrame & BUTTON_UP) {
+        move(U);
+      } else if (pressedThisFrame & BUTTON_DOWN) {
+        move(D);
+      } else if (pressedThisFrame & BUTTON_1) {
+        currentPiece = (currentPiece + 1) % level.numPiecesInStage;
+      } else if (pressedThisFrame & BUTTON_2) {
+        if (currentPiece == 0) {
+          currentPiece = level.numPiecesInStage - 1;
+        } else {
+          currentPiece = currentPiece - 1;
+        }
+      }
+    } else {
+      *DRAW_COLORS = 4;
+      text(level.victoryPhrase, 20, 60);
+      text("x continues", 12, 152);
+      if (pressedThisFrame & BUTTON_1) {
+        levelSelectCounter = (levelSelectCounter + 1) % NUMBER_OF_LEVELS;
+        (*levels[levelSelectCounter]) (&level);
+        state = game;
       }
     }
     *DRAW_COLORS = 4;
 
-    if (checkVictory()) {
-      text(level.victoryPhrase, 50, 60);
-      if (!hasVictory) {
-        tone(262 | (523 << 16), 60, 100, TONE_PULSE1);
-      }
-      hasVictory = true;     
+
+    if (checkVictory() && state == game) {
+      state = victory; 
+      tone(262 | (523 << 16), 60, 100, TONE_PULSE1);
     }
 
 }
@@ -316,7 +329,7 @@ void levelSelect() {
       }
       (*levels[levelSelectCounter]) (&level);
     } else if (pressedThisFrame & BUTTON_1) {
-      inLevelSelect = false;
+      state = game;
     }
 
   
@@ -338,7 +351,7 @@ void levelSelect() {
     *DRAW_COLORS = 0x0004;
     text(levelSelectText, 12, 2);
     text("Select Level", 52, 2);
-    text("(Arrow pick, x go)", 12, 152);
+    text("arrow pick + x go", 12, 152);
 
     if (leftPressed > 0) {
       *DRAW_COLORS = pressed;
@@ -353,13 +366,14 @@ void update () {
   gamepad = *GAMEPAD1;
   pressedThisFrame = gamepad & (gamepad ^ previousGamepad);
   previousGamepad = gamepad;
-  if (framesToDate >=0 && framesToDate < 180) {
+  if (state == splash) {
     splashScreen();
     framesToDate++;
-  } else if (inLevelSelect) {
-    framesToDate = -1;
+  } else if (state == select) {
     levelSelect();
-  } else {
-    game();
+  } else if (state == game) {
+    play();
+  } else if (state == victory) {
+    play();
   }
 }

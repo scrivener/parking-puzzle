@@ -2,6 +2,7 @@
 typedef enum {H, V} orientation;
 typedef enum {L, R, U, D} direction;
 typedef enum {ok, err} outcome;
+typedef enum {splash, select, game, victory} gameState;
 
 typedef struct {
     int8_t       x;
