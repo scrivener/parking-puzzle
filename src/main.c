@@ -251,7 +251,6 @@ void game() {
      PALETTE[1] = 0x86c06c;
      PALETTE[2] = 0x306850; 
      PALETTE[3] = 0x71821;
-
       
     /* uint8_t gamepad = *GAMEPAD1; */
     /* uint8_t pressedThisFrame = gamepad & (gamepad ^ previousGamepad); */
@@ -295,10 +294,10 @@ void game() {
 
 void levelSelect() {
     // Experiment with using a paler color palette in level select
-    PALETTE[0] = 0xeaffd9;
-    PALETTE[1] = 0xa0da86;
-    PALETTE[2] = 0x4A826A; 
-    PALETTE[3] = 0x21323B;
+    PALETTE[0] = 0xF1FFE6;
+    PALETTE[1] = 0xBBDAAE;
+    PALETTE[2] = 0x6D8078;
+    PALETTE[3] = 0x2F373B;
     
     drawBoard();
     drawPieces();
