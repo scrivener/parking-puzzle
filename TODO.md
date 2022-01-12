@@ -6,7 +6,7 @@ X Clean up level ending
   X Keypress stop, audio doesn't stop, press x to continue
 
 Nice to have
-- Save progress
+X Save progress
 - Number the pieces relative to current x/z button presses
 - Any kind of per-piece art
 W Music? Better sounds?
