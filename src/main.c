@@ -9,7 +9,7 @@
 #define BOARD_WIDTH 6
 #define BOARD_HEIGHT 6
 #define ARROW_FLASH_DURATION 6
-#define NUMBER_OF_LEVELS 2
+#define NUMBER_OF_LEVELS 4
 
 const uint8_t arrow[] = {
     0b10000000,
@@ -241,8 +241,10 @@ void splashScreen() {
 }
 
 void start () {
-    levels[0] = level1;
-    levels[1] = level2;
+    levels[0] = levelA;
+    levels[1] = level0;
+    levels[2] = level1;
+    levels[3] = level2;
     (*levels[0])(&level);
 }
 
@@ -288,7 +290,6 @@ void game() {
       }
       hasVictory = true;     
     }
-
 
 }
 
@@ -337,7 +338,7 @@ void levelSelect() {
     *DRAW_COLORS = 0x0004;
     text(levelSelectText, 12, 2);
     text("Select Level", 52, 2);
-    text("Use < > to Select", 12, 152);
+    text("(Arrow pick, x go)", 12, 152);
 
     if (leftPressed > 0) {
       *DRAW_COLORS = pressed;

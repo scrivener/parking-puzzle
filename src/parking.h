@@ -27,5 +27,7 @@ typedef struct {
     char          topPhrase[64];
 } Level;
 
+outcome levelA(Level *);
+outcome level0(Level *);
 outcome level1(Level *);
 outcome level2(Level *);
