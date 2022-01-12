@@ -72,7 +72,14 @@ outcome drawPieces() {
   Piece *pieces = level.pieces;
 
   bool selected;
+  uint8_t dist;
+  char pieceText[2];
   for (int i=0; i<level.numPiecesInStage; i++) {
+    if (i > currentPiece) {
+      dist = i - currentPiece;
+    } else {
+      dist = (level.numPiecesInStage - currentPiece) + i;
+    }
     selected = (i == currentPiece);
     Piece piece = pieces[i];
     if (i == 0) {
@@ -88,7 +95,12 @@ outcome drawPieces() {
       rect(p.x + 1, p.y + 1, 
            spaceSize - 2 , spaceSize * piece.length - 2);
     }
-
+    *DRAW_COLORS = 2;
+    pieceText[0]= 0x30 + dist;
+    pieceText[1]= 0x0;
+    if (!selected && state == game) {
+      text(pieceText, p.x + 2, p.y + 2);
+    }
     if (selected) {
       *DRAW_COLORS = 0x20;
       int arrowLen = spaceSize * piece.length - 10;
@@ -308,7 +320,9 @@ void play() {
     if (checkVictory() && state == game) {
       state = victory; 
       levelSelectCounter = (levelSelectCounter + 1) % NUMBER_OF_LEVELS;
-      maximumLevel = levelSelectCounter;
+      if (maximumLevel < levelSelectCounter) {
+        maximumLevel = levelSelectCounter;
+      }
       diskw(&maximumLevel, sizeof(maximumLevel));
       tracef("Wrote %d", maximumLevel);
       tone(262 | (523 << 16), 60, 100, TONE_PULSE1);
