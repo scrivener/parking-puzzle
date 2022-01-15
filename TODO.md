@@ -1,5 +1,5 @@
-/ A sequence of levels
-  - You win!
+X A sequence of levels
+  X You win!
 X Adjust top text
 X Explanation text during play
 X Color palette change for level select?

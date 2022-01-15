@@ -9,7 +9,7 @@
 #define BOARD_WIDTH 6
 #define BOARD_HEIGHT 6
 #define ARROW_FLASH_DURATION 6
-#define NUMBER_OF_LEVELS 4
+#define NUMBER_OF_LEVELS 5
 
 const uint8_t arrow[] = {
     0b10000000,
@@ -41,6 +41,8 @@ int leftPressed = 0;
 int rightPressed = 0;
 uint8_t maximumLevel = 0;
 uint8_t levelSelectCounter = 0;
+
+bool endingSound = false;
 
 Pixel boardToPixel(int x, int y) {
   Pixel pixel;
@@ -255,8 +257,14 @@ void splashScreen() {
 
 void endScreen() {
   *DRAW_COLORS = 2;
-  text("Hell is other cars", 10, 20);
-  //TODO music
+  text("You made it home!", 10, 20);
+  if (endingSound == false) {
+    tone(120 | (570 << 16), 
+        60 | (90 << 8) |  (80 << 16) | (30 << 24), 
+        60, 
+        TONE_PULSE1);
+    endingSound = true;
+  }
 }
 
 void start () {
@@ -265,12 +273,11 @@ void start () {
     levels[1] = level0;
     levels[2] = level1;
     levels[3] = level2;
+    levels[4] = level3;
     diskr(&maximumLevel, sizeof(maximumLevel));
     tracef("On start read %d", maximumLevel);
     levelSelectCounter = maximumLevel;
     (*levels[levelSelectCounter])(&level);
-
-
 }
 
 void play() {
